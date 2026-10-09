@@ -26,7 +26,7 @@ Record the subsystem ID and the adapter names. Do not continue if the card is no
 
 ## 1. Choose one adapter
 
-Pick a single candidate adapter by name. The sensor sat on the adapter numbered 3 during research on the development machine. Use the adapter on this card whose name carries that number, and treat it as a starting point, not a fact. Probing is one adapter at a time, by decision. Nothing scans.
+Pick a single candidate adapter by name: the one named `NVIDIA i2c adapter 1 at <PCI>`. AstralGauge selects its candidates by that name (`src/hardware.rs`, `find_i2c_bus`), and on the development machine that adapter is kernel bus `i2c-3`, where research expected the sensor. The kernel number varies between machines and boots; the name is what to match. Treat the name as a starting point, not a fact. Probing is one adapter at a time, by decision. Nothing scans.
 
 ## 2. Load the I²C device interface for this boot (host change)
 
