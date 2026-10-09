@@ -1,6 +1,6 @@
 # Controlled live trial
 
-**Status: proposed, not run.** No card is supported until this trial passes and its results are recorded. The shipped supported-card table (`SUPPORTED_CARDS` in `collector/astral_monitor/identify.py`) is empty.
+**Status: run once, on subsystem 1043:89e3 (see [hardware](hardware.md)).** No card is supported until a reviewed change adds it to the table. The shipped supported-card table (`SUPPORTED_CARDS` in `collector/astral_monitor/identify.py`) is empty.
 
 The trial answers three questions on one real card:
 
@@ -76,7 +76,7 @@ PYTHONPATH=collector python3 -m astral_monitor.collector \
 ASTRAL_FIXTURE_PATH="$XDG_RUNTIME_DIR/astral-trial/snapshot.json" make preview
 ```
 
-The preview shows these readings without the FIXTURE badge because they come from hardware. Optional cross-check: under steady load the computed connector total should sit close to, and not above, the board power that `nvidia-smi --query-gpu=power.draw --format=csv` reports. That query is read-only.
+The preview shows these readings without the FIXTURE badge because they come from hardware. Optional cross-check: compare the computed connector total with the board power from `nvidia-smi --query-gpu=power.draw --format=csv`, a read-only query. Expect the two to follow each other but not match. The first trial found that the sensor lags and smooths, and reads above board power at idle; see [hardware](hardware.md).
 
 ## 5. Record the result
 
