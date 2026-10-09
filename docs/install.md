@@ -12,7 +12,7 @@ sudo systemctl enable --now astral-monitor       # start the collector, now and 
 make plugin-install                              # as your user: add the plugin to Noctalia
 ```
 
-Then add the "Astral Monitor" widget to a bar in Noctalia's Settings.
+Enabling the plugin does not place its widget. Open Noctalia **Settings → Bar**, add a widget to a section, and pick **Astral Monitor**. Clicking it opens the panel.
 
 `sudo make install` ends by listing the device nodes it granted. Exactly one `/dev/i2c-*` node should show group `astral-monitor`. If it warns that none was granted, run `sudo make uninstall`.
 
