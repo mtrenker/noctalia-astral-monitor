@@ -1,6 +1,6 @@
 # Design
 
-This records the direction for the MVP in [issue #1](https://github.com/mtrenker/noctalia-astral-monitor/issues/1). The snapshot contract, the Noctalia plugin, the fixture source, and the collector are implemented. The collector has only been exercised against fakes: no card is supported until a [controlled live trial](live-trial.md) passes. The UI was accepted at the fixture checkpoint, including the stale-reading behaviour below.
+This records the direction for the MVP in [issue #1](https://github.com/mtrenker/noctalia-astral-monitor/issues/1). The snapshot contract, the Noctalia plugin, the fixture source, and the collector are implemented. The collector has passed one [controlled live trial](live-trial.md), recorded in [hardware](hardware.md). The UI was accepted at the fixture checkpoint, including the stale-reading behaviour below.
 
 Background: [first increment](first-increment.md), [sensor research](research.md).
 
@@ -44,7 +44,7 @@ The collector decides support from PCI identity before any I²C transaction.
 5. Open only `/dev/i2c-<n>` for that adapter, address only `0x2B`, and issue only the reads listed in [research](research.md#sensor-protocol). The adapter number is looked up on every (re)identification and never configured or cached across boots. `i2c-3` on the development machine is an observation, not a contract.
 6. Rediscover after read failures by repeating steps 1–4, so a GPU reset that renumbers adapters is handled.
 
-The table starts empty. A row is added only after a controlled live trial records the subsystem ID, adapter name, kernel, and driver version, and a validation read matches the bytewise reference. The astral-watch card list is a source of candidates, not of support. A local, explicit `--card SUBSYS --adapter-name NAME` override may exist for that trial; it still requires the PCI match.
+The table started empty and now lists only `1043:89e3` (see [hardware](hardware.md)). A row is added only after a controlled live trial records the subsystem ID, adapter name, kernel, and driver version, and a validation read matches the bytewise reference. The astral-watch card list is a source of candidates, not of support. A local, explicit `--card SUBSYS --adapter-name NAME` override may exist for that trial; it still requires the PCI match.
 
 No broad scans, no fallback to bus 0, no NVML device-index guessing, no power, clock, fan, or process commands.
 

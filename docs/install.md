@@ -1,6 +1,6 @@
 # Install and uninstall
 
-**Only for a card listed in the supported-card table.** That table is empty until a [controlled live trial](live-trial.md) adds a row. On any other machine the collector reports `unsupported` and never touches I²C.
+**Only for a card listed in the supported-card table.** It lists only ROG Astral RTX 5090 subsystem `1043:89e3`; other cards need a [controlled live trial](live-trial.md) first. On any other machine the collector reports `unsupported` and never touches I²C.
 
 Nothing here runs automatically: the plugin does not install the collector, change device permissions, or enable services. Every step is a command you run and can reverse. Run from the root of a checkout you will keep, not a temporary worktree.
 

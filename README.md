@@ -2,7 +2,7 @@
 
 A planned Noctalia plugin for monitoring individual power-pin currents on ASUS ROG Astral GPUs on Linux.
 
-**Status: collector built, not yet trialled. The Noctalia plugin runs against a hardware-free fixture source, and a read-only collector exists but has only been tested against fakes. No card is supported, and no hardware readings have been validated by this project, until a [controlled live trial](docs/live-trial.md) passes.**
+**Status: early. The read-only collector and Noctalia plugin work on one tested card, an ASUS ROG Astral RTX 5090 with PCI subsystem `1043:89e3`, at idle and under a bursty image-generation workload. Sustained load and other cards are untested. See [hardware observations](docs/hardware.md).**
 
 ## Intended first release
 
@@ -17,6 +17,13 @@ The first release will not change GPU power limits, kill processes, or expose a 
 ## Compatibility
 
 The initial target is an ASUS ROG Astral RTX 5090 with the ITE IT8915FN sensor controller and NVIDIA I²C adapters exposed by the Linux driver. Related cards, including Astral RTX 5080 variants, need separate validation; a GPU name alone is not sufficient to establish compatibility.
+
+| Card | PCI subsystem | Status |
+| --- | --- | --- |
+| ROG Astral RTX 5090 | `1043:89e3` | Tested: idle and bursty workload, kernel 7.2.8, driver 615.71.09 ([details](docs/hardware.md)) |
+| Other Astral subsystems | | Untested; the collector reports `unsupported` and does not touch I²C |
+
+The sensor's readings lag board power by 1–2 s and smooth short bursts, so the per-feed warning is a trend indicator, not a fast trip.
 
 The UI targets **Noctalia 5's Luau plugin API**. It is not a QML plugin for older Noctalia versions. The plugin declares plugin API 23, so it needs Noctalia 5.0.0-beta.8 or later; it is developed and previewed on 5.2.1. Hyprland is the initial desktop environment, but the plugin should avoid compositor-specific dependencies.
 
@@ -74,7 +81,7 @@ The fixture source writes `$XDG_RUNTIME_DIR/astral-monitor-fixture/snapshot.json
 
 ### Collector
 
-`python3 -m astral_monitor.collector` (with `PYTHONPATH=collector`) is the read-only collector. With `--identify` it reports cards and adapters from sysfs without opening any device, and with `--udev-rule` it prints the device-permission rule. On a machine without a supported card it publishes `unsupported` and never touches I²C. Its tests use a fake sysfs tree and a fake I²C interface. [Install](docs/install.md) covers the service and the plugin.
+`python3 -m astral_monitor.collector` (with `PYTHONPATH=collector`) is the read-only collector. With `--identify` it reports cards and adapters from sysfs without opening any device, and with `--udev-rule` it prints the device-permission rule. On a machine without a supported card it publishes `unsupported` and never touches I²C. Its automated tests use a fake sysfs tree and a fake I²C interface; hardware results are in [hardware observations](docs/hardware.md). [Install](docs/install.md) covers the service and the plugin.
 
 ## Credits and license
 

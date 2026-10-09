@@ -1,6 +1,6 @@
 # Contributing
 
-This project contains a Noctalia plugin, a hardware-free fixture source, and a read-only collector that has not yet been run on hardware. No card is supported until the [controlled live trial](docs/live-trial.md) passes. Run `make check` before proposing a change; the [README](README.md#commands) lists the preview commands.
+This project contains a Noctalia plugin, a hardware-free fixture source, and a read-only collector tested on one card (see [hardware observations](docs/hardware.md)). Other cards need the [controlled live trial](docs/live-trial.md) before they are listed. Run `make check` before proposing a change; the [README](README.md#commands) lists the preview commands.
 
 Keep contributions focused on the [first increment](docs/first-increment.md). Discuss hardware access, privilege changes, and public data-format changes before implementing them. UI work should include a hardware-free preview and explicit unavailable/stale states.
 

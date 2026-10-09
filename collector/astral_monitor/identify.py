@@ -25,7 +25,11 @@ class CardType:
 # Rows are added only after a controlled live trial records the subsystem ID, adapter
 # name, kernel, and driver, and a validation read matches the per-register reference.
 # See docs/live-trial.md. astral-watch's card list is a source of candidates, not support.
-SUPPORTED_CARDS = ()
+SUPPORTED_CARDS = (
+    # Trial 2026-10-09, docs/hardware.md: kernel 7.2.8, driver 615.71.09, block read validated.
+    CardType(subsystem_device=0x89E3, model="ROG Astral RTX 5090",
+             adapter_name="NVIDIA i2c adapter 1 at *"),
+)
 
 
 @dataclass(frozen=True)

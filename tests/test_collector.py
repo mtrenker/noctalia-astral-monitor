@@ -68,8 +68,8 @@ class CollectorTest(unittest.TestCase):
         self.assertEqual(opener.opened, [])
         self.assertEqual(self.bus.calls, [])
 
-    def test_empty_shipped_table_is_unsupported_everywhere(self):
-        self.card()
+    def test_shipped_table_ignores_unvalidated_astral_subsystems(self):
+        self.card()  # 1043:89ed: an astral-watch candidate, not trialled here
         opener = self.bus.opener()
         value = self.make(opener, table=identify.SUPPORTED_CARDS).poll()
         self.assertEqual(value["status"], "unsupported")
@@ -170,8 +170,15 @@ class CliTest(unittest.TestCase):
             identify.parse_subsystem("10de:2b85")
         self.assertEqual(identify.parse_subsystem("1043:89ed"), 0x89ED)
 
-    def test_shipped_support_table_is_empty_until_a_trial(self):
-        self.assertEqual(identify.SUPPORTED_CARDS, ())
+    def test_shipped_support_table_lists_only_trialled_cards(self):
+        self.assertEqual([row.subsystem_device for row in identify.SUPPORTED_CARDS], [0x89E3])
+
+    def test_shipped_table_selects_the_trialled_adapter(self):
+        with tempfile.TemporaryDirectory() as sysfs:
+            add_pci(sysfs, "0000:0a:00.0", sub_device=0x89E3, adapters=[
+                (number, f"NVIDIA i2c adapter {number - 2} at a:00.0") for number in range(3, 10)])
+            card = identify.find_card(identify.SUPPORTED_CARDS, sysfs)
+            self.assertEqual(identify.select_adapter(card, sysfs).number, 3)
 
 
 class ScopeTest(unittest.TestCase):

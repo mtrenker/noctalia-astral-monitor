@@ -1,6 +1,6 @@
 # Controlled live trial
 
-**Status: run once, on subsystem 1043:89e3 (see [hardware](hardware.md)).** No card is supported until a reviewed change adds it to the table. The shipped supported-card table (`SUPPORTED_CARDS` in `collector/astral_monitor/identify.py`) is empty.
+**Status: run once, on subsystem 1043:89e3 (see [hardware](hardware.md)), which is now the only row in `SUPPORTED_CARDS` (`collector/astral_monitor/identify.py`).** Use this plan for any other card.
 
 The trial answers three questions on one real card:
 
