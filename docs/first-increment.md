@@ -4,7 +4,7 @@
 
 A Noctalia user can see the highest measured power-pin current in the bar and inspect all six feeds in a popup. Missing or outdated data is visibly unavailable, never reassuring.
 
-This is the proposed implementation direction, not a completed feature or a frozen public API. Review a running UI slice before building out history or notification behavior.
+This is the proposed implementation direction, not a completed feature or a frozen public API. Review a running UI slice before building out history or notification behavior. The decisions this page left open are recorded in [the design](design.md).
 
 ## Boundaries
 

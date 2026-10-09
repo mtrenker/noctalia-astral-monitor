@@ -1,6 +1,6 @@
 # Contributing
 
-This project currently contains research and a first-increment proposal, not a working implementation.
+This project contains a Noctalia plugin, a hardware-free fixture source, and a read-only collector tested on one card (see [hardware observations](docs/hardware.md)). Other cards need the [controlled live trial](docs/live-trial.md) before they are listed. Run `make check` before proposing a change; the [README](README.md#commands) lists the preview commands.
 
 Keep contributions focused on the [first increment](docs/first-increment.md). Discuss hardware access, privilege changes, and public data-format changes before implementing them. UI work should include a hardware-free preview and explicit unavailable/stale states.
 

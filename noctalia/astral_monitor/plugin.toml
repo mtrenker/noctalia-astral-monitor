@@ -1,0 +1,49 @@
+# Read-only display of an external collector's power-feed snapshot.
+# The service is the only entry that reads the snapshot file; the bar widget and
+# panel render what it publishes on noctalia.state, so extra widget instances add
+# no reads. Nothing in this plugin touches I2C or GPU controls. See docs/design.md.
+
+id = "mtrenker/astral_monitor"
+name = "Astral Monitor"
+version = "0.1.0"
+plugin_api = 23
+author = "mtrenker"
+license = "MIT"
+icon = "bolt"
+description = "Per-feed current and voltage from an ASUS ROG Astral GPU's power connector sensor, read from a local collector snapshot."
+tags = ["gpu", "power", "monitor"]
+dependencies = []
+
+[[setting]]
+key = "snapshot_path"
+type = "file"
+label_key = "settings.snapshot_path.label"
+description_key = "settings.snapshot_path.description"
+default = "/run/astral-monitor/snapshot.json"
+extensions = [".json"]
+
+[[setting]]
+key = "warn_current_a"
+type = "double"
+label_key = "settings.warn_current_a.label"
+description_key = "settings.warn_current_a.description"
+default = 9.2
+min = 1.0
+max = 20.0
+
+[[service]]
+id = "service"
+entry = "service.luau"
+
+[[widget]]
+id = "bar"
+entry = "bar.luau"
+
+[[panel]]
+id = "panel"
+entry = "panel.luau"
+width = 460
+height = 470
+placement = "attached"
+position = "auto"
+open_near_click = true

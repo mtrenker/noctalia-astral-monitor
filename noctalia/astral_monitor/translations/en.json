@@ -1,0 +1,6 @@
+{
+  "settings.snapshot_path.label": "Snapshot file",
+  "settings.snapshot_path.description": "JSON snapshot written by the Astral collector or the fixture source.",
+  "settings.warn_current_a.label": "Warning current per feed (A)",
+  "settings.warn_current_a.description": "Feeds at or above this current are flagged. A lower reading does not mean the connector is safe."
+}
