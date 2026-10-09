@@ -2,7 +2,7 @@
 
 A planned Noctalia plugin for monitoring individual power-pin currents on ASUS ROG Astral GPUs on Linux.
 
-**Status: fixture preview. The Noctalia plugin runs against a hardware-free fixture source. There is no hardware collector yet, and no hardware readings have been validated by this project.**
+**Status: collector built, not yet trialled. The Noctalia plugin runs against a hardware-free fixture source, and a read-only collector exists but has only been tested against fakes. No card is supported, and no hardware readings have been validated by this project, until a [controlled live trial](docs/live-trial.md) passes.**
 
 ## Intended first release
 
@@ -33,11 +33,13 @@ Do not use broad I²C address scans to discover this sensor. Reading known telem
 ## Development
 
 - [Design](docs/design.md): components, snapshot schema, freshness and display states, privileges, and UI composition.
+- [Controlled live trial](docs/live-trial.md): the proposed first hardware run, step by step.
+- [Install and uninstall](docs/install.md): collector service, device permission, and plugin.
 - [First increment](docs/first-increment.md): scope, boundaries, and checks.
 - [Research](docs/research.md): sensor protocol, upstream implementations, and known concerns.
 - [Contributing](CONTRIBUTING.md): hardware reports and contribution expectations.
 
-Layout: `noctalia/astral_monitor/` is the plugin, `collector/astral_monitor/` holds the snapshot schema, decoder, and fixture source, and `tests/` holds the checks.
+Layout: `noctalia/astral_monitor/` is the plugin. `collector/astral_monitor/` holds the snapshot schema, decoder, fixture source, and collector. `packaging/` holds the systemd unit and account files, and `tests/` holds the checks.
 
 ### Requirements
 
@@ -70,11 +72,13 @@ The fixture source writes `$XDG_RUNTIME_DIR/astral-monitor-fixture/snapshot.json
 
 `make preview` opens a nested Hyprland window with its own Wayland display and a private D-Bus session, then starts a second Noctalia inside it with config, state, and data directories under `$XDG_RUNTIME_DIR/astral-monitor-preview`. It uses the Tokyo-Night theme, offline mode, and two instances of the bar widget to show that they share one reader. Your running shell, its settings, and its plugins are not touched, and nothing is installed. `make preview-panel` refuses to run unless the preview's own display is live, so it cannot reach your shell. The plugin's log is `$XDG_RUNTIME_DIR/astral-monitor-preview/noctalia.log`.
 
-Installation into your own Noctalia, and the hardware collector with its install and uninstall steps, arrive with the live increment.
+### Collector
+
+`python3 -m astral_monitor.collector` (with `PYTHONPATH=collector`) is the read-only collector. With `--identify` it reports cards and adapters from sysfs without opening any device, and with `--udev-rule` it prints the device-permission rule. On a machine without a supported card it publishes `unsupported` and never touches I²C. Its tests use a fake sysfs tree and a fake I²C interface. [Install](docs/install.md) covers the service and the plugin.
 
 ## Credits and license
 
-Sensor research builds on [astral-watch](https://github.com/mbeaman/astral-watch), [AstralGauge](https://github.com/MortenSmedsrud/AstralGauge), and their cited reverse-engineering work. No upstream implementation code is included yet. The decoder test uses a published telemetry capture from astral-watch's tests, credited in `tests/test_snapshot.py`.
+Sensor research builds on [astral-watch](https://github.com/mbeaman/astral-watch), [AstralGauge](https://github.com/MortenSmedsrud/AstralGauge), and their cited reverse-engineering work. The collector's read strategy in `collector/astral_monitor/i2c.py` is ported from astral-watch; its MIT notice is in `LICENSES/astral-watch-MIT.txt`. Tests use a published telemetry capture from astral-watch's tests, credited in `tests/fakes.py`.
 
 MIT licensed. Any future reuse of upstream code must retain its copyright and license notices.
 

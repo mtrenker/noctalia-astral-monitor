@@ -6,12 +6,9 @@ import unittest
 
 from astral_monitor import snapshot as snap
 
-# Real capture from an ASUS ROG Astral RTX 5090 at ~607 W, published in astral-watch's
-# src/decode.rs tests (MIT, Copyright (c) 2026 Matt Beaman, commit dce7eee).
-ASTRAL_WATCH_SAMPLE = bytes([
-    0x2E, 0x98, 0x21, 0xD4, 0x2E, 0x90, 0x21, 0xD4, 0x2E, 0x90, 0x20, 0x80, 0x2E, 0xA0, 0x20,
-    0x58, 0x2E, 0xA0, 0x21, 0x5C, 0x2E, 0xA0, 0x1F, 0xE0,
-])
+# ASTRAL_WATCH_SAMPLE is a real capture from an ASUS ROG Astral RTX 5090 at ~607 W, published
+# in astral-watch's src/decode.rs tests (MIT, Copyright (c) 2026 Matt Beaman, commit dce7eee).
+from fakes import ASTRAL_WATCH_SAMPLE
 
 COLLECTOR = {"instance": "abcd1234", "started_at_ms": 1, "sequence": 1}
 

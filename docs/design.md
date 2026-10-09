@@ -1,6 +1,6 @@
 # Design
 
-This records the direction for the MVP in [issue #1](https://github.com/mtrenker/noctalia-astral-monitor/issues/1). The fixture checkpoint implements the snapshot contract, the Noctalia plugin, and a hardware-free fixture source. The live collector is the next increment and must follow the sections marked **collector**.
+This records the direction for the MVP in [issue #1](https://github.com/mtrenker/noctalia-astral-monitor/issues/1). The snapshot contract, the Noctalia plugin, the fixture source, and the collector are implemented. The collector has only been exercised against fakes: no card is supported until a [controlled live trial](live-trial.md) passes. The UI was accepted at the fixture checkpoint, including the stale-reading behaviour below.
 
 Background: [first increment](first-increment.md), [sensor research](research.md).
 
@@ -20,7 +20,7 @@ collector (root-free system service, one per machine)    fixture source (develop
 - Only the collector touches hardware. It is a separate process that runs without Noctalia.
 - Only the plugin **service** reads the snapshot file. Widgets and the panel render the view the service publishes. Adding widgets on more bars or outputs therefore adds no file reads and no sensor transactions.
 - The fixture source writes the same schema to a different path and labels every snapshot `"source": "fixture"`. It never opens a device node.
-- Shared Python code (`collector/astral_monitor/snapshot.py`) owns the schema, the telemetry decoder, and the atomic writer. The fixture source uses it now; the collector will import it later.
+- Shared Python code (`collector/astral_monitor/snapshot.py`) owns the schema, the telemetry decoder, and the atomic writer. The fixture source and the collector both use it. `identify.py` reads sysfs only; `i2c.py` is the only module that opens a device; `collector.py` is the poll loop and CLI.
 
 ## Collector language
 
@@ -123,12 +123,13 @@ The service evaluates every read into a **view** with one `state`:
 | Item | Decision |
 | --- | --- |
 | Account | Dedicated system user and group `astral-monitor`, no login shell, no home. |
-| Device access | A udev rule matching the supported card's PCI subsystem and the adapter `name` sets `GROUP="astral-monitor", MODE="0660"` on that one `/dev/i2c-*` node. Other adapters keep their defaults. |
-| Read-only | Device access permits writes, so the collector's code enforces read-only use: one address, the telemetry register range, read transfers only. Tests assert no other ioctl request is issued. |
-| Service | systemd unit, `User=astral-monitor`, `RuntimeDirectory=astral-monitor` (mode `0755`), `DeviceAllow=` limited to the matched node, `PrivateNetwork=yes`, `RestrictAddressFamilies=AF_UNIX`, `ProtectSystem=strict`, `ProtectHome=yes`, `NoNewPrivileges=yes`. |
+| Device access | A udev rule matching the supported card's PCI subsystem and the adapter `name` sets `GROUP="astral-monitor", MODE="0660"` on that one `/dev/i2c-*` node. Other adapters keep their defaults. `--udev-rule` generates it from the supported-card table. |
+| Read-only | Device access permits writes, so the collector's code enforces read-only use: only `I2C_SLAVE` (never the force variant) for address `0x2B`, and `I2C_SMBUS` read transfers of registers `0x80`–`0x97`. Tests assert no other ioctl request is issued. |
+| Service | `packaging/astral-monitor.service`: `User=astral-monitor`, `RuntimeDirectory=astral-monitor` (mode `0755`), `DevicePolicy=closed` with `DeviceAllow=char-i2c rw` (the adapter number is not stable, so the udev rule's file permissions narrow access to one node), no capabilities, `PrivateNetwork=yes`, `RestrictAddressFamilies=AF_UNIX`, `ProtectSystem=strict`, `ProtectHome=yes`, `NoNewPrivileges=yes`, and a system-call filter. |
+| Root | The collector refuses to run as root, so a trial cannot bypass the boundary. The trial grants one user a temporary ACL on one node instead. |
 | Snapshot | `/run/astral-monitor/snapshot.json`, owned by `astral-monitor`, mode `0644`. Only the collector can write it; desktop users read it. |
 | Shell | Noctalia runs unprivileged and only reads the snapshot. It never gets `/dev/i2c-*` access. |
-| Install | Explicit, documented steps the operator runs with `sudo`: create the user, install the udev rule and unit, then `systemctl enable --now`. Nothing is installed or enabled by the plugin. Uninstall reverses each step. |
+| Install | Explicit steps in [install](install.md) that the operator runs with `sudo`. Nothing is installed or enabled by the plugin. Uninstall reverses each step. |
 | `i2c-dev` | Loading it is an operator step, documented with its persistence option. The collector reports `no_adapter` until it is loaded. |
 
 The fixture source writes to `$XDG_RUNTIME_DIR/astral-monitor-fixture/snapshot.json` as the developer.

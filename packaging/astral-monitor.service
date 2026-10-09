@@ -1,0 +1,52 @@
+# Read-only Astral power-feed collector. Installed by hand; see docs/install.md.
+[Unit]
+Description=Astral power-feed collector (read-only)
+Documentation=https://github.com/mtrenker/noctalia-astral-monitor/blob/main/docs/install.md
+
+[Service]
+Type=simple
+User=astral-monitor
+Group=astral-monitor
+Environment=PYTHONPATH=/usr/local/lib/astral-monitor
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/usr/bin/python3 -m astral_monitor.collector
+Restart=on-failure
+RestartSec=5
+
+# /run/astral-monitor/snapshot.json: writable by this service only, readable by desktop users.
+RuntimeDirectory=astral-monitor
+RuntimeDirectoryMode=0755
+UMask=0022
+
+# Device access: I2C character devices only. File permissions (the udev rule) then limit it
+# to the one Astral sensor adapter.
+DevicePolicy=closed
+DeviceAllow=char-i2c rw
+
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+PrivateNetwork=yes
+IPAddressDeny=any
+RestrictAddressFamilies=AF_UNIX
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources
+
+[Install]
+WantedBy=multi-user.target

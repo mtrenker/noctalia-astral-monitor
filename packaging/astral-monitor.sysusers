@@ -1,0 +1,2 @@
+# systemd-sysusers: dedicated account for the collector. No login shell, no home.
+u astral-monitor - "Astral power-feed collector" - -
