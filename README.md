@@ -68,6 +68,8 @@ No supported GPU, elevated privileges, or I²C access is needed for any of this.
 | Toggle the panel in the preview | `make preview-panel` |
 | Screenshot of the preview | `scripts/preview.sh shot /tmp/astral-preview.png` |
 | Teardown | Ctrl-C the preview and the fixture source, then `make preview-clean` |
+| Install on a supported card | `sudo make install`, `sudo systemctl enable --now astral-monitor`, `make plugin-install` |
+| Uninstall | `make plugin-uninstall`, `sudo make uninstall` |
 
 Run the fixture source and the preview in two terminals; both stay in the foreground.
 

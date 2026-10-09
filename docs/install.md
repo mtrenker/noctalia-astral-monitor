@@ -2,101 +2,64 @@
 
 **Only for a card listed in the supported-card table.** It lists only ROG Astral RTX 5090 subsystem `1043:89e3`; other cards need a [controlled live trial](live-trial.md) first. On any other machine the collector reports `unsupported` and never touches I²C.
 
-Nothing here runs automatically: the plugin does not install the collector, change device permissions, or enable services. Every step is a command you run and can reverse. Run from the root of a checkout you will keep, not a temporary worktree.
+Nothing happens automatically: the plugin does not install the collector, change device permissions, or start services. Run these from a checkout of the repository.
 
-## What gets installed
+## Install
+
+```sh
+sudo make install                                # collector, account, device access, i2c-dev
+sudo systemctl enable --now astral-monitor       # start the collector, now and at boot
+make plugin-install                              # as your user: add the plugin to Noctalia
+```
+
+Then add the "Astral Monitor" widget to a bar in Noctalia's Settings.
+
+`sudo make install` ends by listing the device nodes it granted. Exactly one `/dev/i2c-*` node should show group `astral-monitor`. If it warns that none was granted, run `sudo make uninstall`.
+
+Check the collector:
+
+```sh
+systemctl status astral-monitor
+cat /run/astral-monitor/snapshot.json            # "status": "ok"
+```
+
+## Uninstall
+
+```sh
+make plugin-uninstall
+sudo make uninstall
+```
+
+`sudo make uninstall` stops and disables the service, removes every installed file, reloads udev and systemd, and deletes the `astral-monitor` account. It leaves i2c-dev loaded until reboot in case something else uses it (`sudo modprobe -r i2c-dev` unloads it now).
+
+## What `sudo make install` does
+
+Files go under `$(PREFIX)/lib`, `/usr/local/lib` by default, which systemd, udev, sysusers, and modules-load all search. Nothing is written to `/etc`.
 
 | Item | Path |
 | --- | --- |
 | Collector code and upstream license notice | `/usr/local/lib/astral-monitor/` |
-| System account `astral-monitor` | `/etc/sysusers.d/astral-monitor.conf` |
-| Access to the one sensor adapter | `/etc/udev/rules.d/70-astral-monitor.rules` |
-| Load i2c-dev at boot (optional) | `/etc/modules-load.d/astral-monitor-i2c-dev.conf` |
-| Service | `/etc/systemd/system/astral-monitor.service` |
-| Snapshot (created by the service) | `/run/astral-monitor/snapshot.json` |
+| Service | `/usr/local/lib/systemd/system/astral-monitor.service` |
+| Access to the one sensor adapter | `/usr/local/lib/udev/rules.d/70-astral-monitor.rules` |
+| System account `astral-monitor` | `/usr/local/lib/sysusers.d/astral-monitor.conf` |
+| Load i2c-dev at boot | `/usr/local/lib/modules-load.d/astral-monitor-i2c-dev.conf` |
+| Snapshot, created by the running service | `/run/astral-monitor/snapshot.json` |
 
-## Install
+After copying the files, it activates them:
 
-1. Copy the collector:
+- creates the account with `systemd-sysusers`;
+- loads `i2c-dev`;
+- reloads and re-triggers udev so the rule applies;
+- runs `systemctl daemon-reload`.
 
-   ```sh
-   sudo install -d -m 0755 /usr/local/lib/astral-monitor/astral_monitor /usr/local/lib/astral-monitor/LICENSES
-   sudo install -m 0644 collector/astral_monitor/*.py /usr/local/lib/astral-monitor/astral_monitor/
-   sudo install -m 0644 LICENSES/* /usr/local/lib/astral-monitor/LICENSES/
-   ```
+It does not enable or start the service.
 
-2. Create the account:
+The udev rule is generated from the supported-card table at install time (`python3 -m astral_monitor.collector --udev-rule` prints it). It grants the `astral-monitor` group read-write access to the adapter named `NVIDIA i2c adapter 1 at …` on a listed card, and to nothing else.
 
-   ```sh
-   sudo install -m 0644 packaging/astral-monitor.sysusers /etc/sysusers.d/astral-monitor.conf
-   sudo systemd-sysusers /etc/sysusers.d/astral-monitor.conf
-   ```
+The service runs as `astral-monitor` with no network, no capabilities, and a read-only view of the system apart from its runtime directory. `systemd-analyze security astral-monitor` summarises the sandbox.
 
-3. Load i2c-dev now, and optionally at every boot:
+`make plugin-install` copies the plugin into `~/.local/share/noctalia/plugins/astral_monitor` and enables it with `noctalia msg plugins enable`, which records the choice in Noctalia's own settings. The copy does not depend on this checkout staying in place. After pulling an update, run it again.
 
-   ```sh
-   sudo modprobe i2c-dev
-   sudo install -m 0644 packaging/i2c-dev.conf /etc/modules-load.d/astral-monitor-i2c-dev.conf
-   ```
+## Staging and packaging
 
-4. Grant the account access to the sensor adapter only. Generate the rule from the supported-card table, read it, then install it:
-
-   ```sh
-   PYTHONPATH=collector python3 -m astral_monitor.collector --udev-rule > /tmp/70-astral-monitor.rules
-   cat /tmp/70-astral-monitor.rules
-   sudo install -m 0644 /tmp/70-astral-monitor.rules /etc/udev/rules.d/70-astral-monitor.rules
-   sudo udevadm control --reload
-   sudo udevadm trigger --subsystem-match=i2c-dev --action=change
-   ls -l /dev/i2c-*
-   ```
-
-   Exactly one node should show group `astral-monitor`. If none or several do, stop and uninstall.
-
-5. Start the service:
-
-   ```sh
-   sudo install -m 0644 packaging/astral-monitor.service /etc/systemd/system/astral-monitor.service
-   sudo systemctl daemon-reload
-   sudo systemctl enable --now astral-monitor.service
-   systemctl status astral-monitor.service
-   cat /run/astral-monitor/snapshot.json
-   ```
-
-   The service has no network access, no capabilities, and a read-only view of the system apart from its runtime directory. `systemd-analyze security astral-monitor.service` summarises the sandbox.
-
-6. Add the plugin to Noctalia. This changes your Noctalia settings:
-
-   ```sh
-   noctalia msg plugins source add astral-monitor path "$PWD/noctalia"
-   noctalia msg plugins enable mtrenker/astral_monitor
-   ```
-
-   Then add the "Astral Monitor" widget to a bar in Settings. Its default snapshot path is `/run/astral-monitor/snapshot.json`.
-
-## Uninstall
-
-Reverse order; each step stands alone, so a partial install can be removed the same way.
-
-```sh
-noctalia msg plugins disable mtrenker/astral_monitor
-noctalia msg plugins source remove astral-monitor
-
-sudo systemctl disable --now astral-monitor.service
-sudo rm /etc/systemd/system/astral-monitor.service
-sudo systemctl daemon-reload
-
-sudo rm /etc/udev/rules.d/70-astral-monitor.rules
-sudo udevadm control --reload
-sudo udevadm trigger --subsystem-match=i2c-dev --action=change
-
-sudo rm -f /etc/modules-load.d/astral-monitor-i2c-dev.conf
-sudo modprobe -r i2c-dev   # optional; only if nothing else uses it
-
-sudo rm /etc/sysusers.d/astral-monitor.conf
-sudo userdel astral-monitor
-sudo groupdel astral-monitor 2>/dev/null || true
-
-sudo rm -r /usr/local/lib/astral-monitor
-```
-
-Stopping the service removes `/run/astral-monitor`. The plugin then shows "No snapshot".
+`make install DESTDIR=/some/root PREFIX=/usr` installs only the files into a staging root. It skips the account, module, udev, and systemd activation, as a package build expects.

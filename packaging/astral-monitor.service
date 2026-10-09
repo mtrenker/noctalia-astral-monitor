@@ -1,4 +1,4 @@
-# Read-only Astral power-feed collector. Installed by hand; see docs/install.md.
+# Read-only Astral power-feed collector. Installed by `sudo make install`; see docs/install.md.
 [Unit]
 Description=Astral power-feed collector (read-only)
 Documentation=https://github.com/mtrenker/noctalia-astral-monitor/blob/main/docs/install.md
